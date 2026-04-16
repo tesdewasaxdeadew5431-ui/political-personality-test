@@ -5,7 +5,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-DATA_DIR = 'responses'
+DATA_DIR = '/tmp/responses'
 os.makedirs(DATA_DIR, exist_ok=True)
 
 @app.route('/submit', methods=['POST'])
@@ -24,19 +24,24 @@ def submit():
 
 @app.route('/responses', methods=['GET'])
 def get_responses():
-    files = sorted(os.listdir(DATA_DIR))
-    responses = []
-    for f in files:
-        if f.endswith('.json'):
-            filepath = os.path.join(DATA_DIR, f)
-            with open(filepath, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-                responses.append(data)
-    return jsonify(responses)
+    try:
+        files = sorted(os.listdir(DATA_DIR))
+        responses = []
+        for f in files:
+            if f.endswith('.json'):
+                filepath = os.path.join(DATA_DIR, f)
+                with open(filepath, 'r', encoding='utf-8') as file:
+                    data = json.load(file)
+                    responses.append(data)
+        return jsonify(responses)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/')
 def serve_index():
     return send_file('index.html')
+
+application = app
 
 if __name__ == '__main__':
     print("🚀 问卷服务已启动")
